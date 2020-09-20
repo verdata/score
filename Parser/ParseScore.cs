@@ -51,6 +51,12 @@ namespace score.Parser
                     continue;
                 }
 
+                if (s.StartsWith("@swing"))
+                {
+                    note.Swing = !note.Swing;
+                    continue;
+                }
+
                 if (s.StartsWith("@alto"))
                 {
                     note.SetAlto();

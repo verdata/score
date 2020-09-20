@@ -20,12 +20,20 @@ namespace score.Domain
 
         private string lastDuration;
 
+        private uint ppqm;
+
         public byte Key { get; set; }
         public byte Velocity { get; set; }
         public uint Duration { get; set; }
 
+        public bool Swing { get; set; }
+
         public Note()
         {
+            Swing = false;
+
+            ppqm = 0;
+
             lastDuration = "4";
 
             type = NoteType.Default;
@@ -59,6 +67,23 @@ namespace score.Domain
                 source = source.TrimEnd('+');
                 StripDuration();
             }
+
+            ppqm += Duration;
+
+            if (Duration == DurationList["8"] & Swing)
+            {
+                var quarterNote = DurationList["4"];
+
+                if (ppqm % quarterNote != 0)
+                {
+                    Duration = DurationList["8%"] * 2;
+                }
+                else
+                {
+                    Duration = DurationList["8%"];
+                }
+            }
+
         }
 
         private void StripDuration()
@@ -160,6 +185,10 @@ namespace score.Domain
 
             Key = NoteList[source];
 
+           // Key += 12;
+
+            // emulate soprano fingering on alto
+            // note will sound p5 lower than written (rather than octave:) 
             if (!isAlto)
             {
                 Key = (byte)(Key - 7);
