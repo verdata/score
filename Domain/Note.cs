@@ -12,30 +12,25 @@ namespace score.Domain
         private Dictionary<string, byte> NoteList;
         private Dictionary<string, uint> DurationList;
         private Dictionary<string, byte> VelocityList;
-
         private string source;
-
-        public NoteType type;
-
-
         private string lastDuration;
-
         private uint ppqm;
 
+        public NoteType type;
         public byte Key { get; set; }
         public byte Velocity { get; set; }
         public uint Duration { get; set; }
-
         public bool Swing { get; set; }
+        public bool Transpose { get; set; }
+        public bool RealPitch { get; set; }
 
         public Note()
         {
             Swing = false;
-
+            RealPitch = false;
+            Transpose = false;
             ppqm = 0;
-
             lastDuration = "4";
-
             type = NoteType.Default;
 
             NoteList = new Dictionary<string, byte>();
@@ -43,6 +38,7 @@ namespace score.Domain
             VelocityList = new Dictionary<string, byte>();
 
             BuildDictionaries();
+            SetSoprano();
         }
 
         public void NextNote(string note)
@@ -50,9 +46,7 @@ namespace score.Domain
             source = note;
 
             StripVelocity();
-
             ProcessDuration();
-
             ProcessNote();
         }
 
@@ -83,7 +77,6 @@ namespace score.Domain
                     Duration = DurationList["8%"];
                 }
             }
-
         }
 
         private void StripDuration()
@@ -124,6 +117,7 @@ namespace score.Domain
 
             lastDuration = noteDuration;
         }
+
         private string TrimDuration(string token)
         {
             if (source.EndsWith(token))
@@ -182,18 +176,26 @@ namespace score.Domain
                 return;
             }
 
-
             Key = NoteList[source];
 
-           // Key += 12;
-
-            // emulate soprano fingering on alto
-            // note will sound p5 lower than written (rather than octave:) 
-            if (!isAlto)
+            // play soprano score on alto
+            // note will sound perfect fifth lower than written  
+            if (!isAlto & Transpose)
             {
                 Key = (byte)(Key - 7);
             }
 
+            // play alto score on soprano
+            // note will sound perfect fifth higher than written  
+            if (isAlto & Transpose)
+            {
+                Key = (byte)(Key - 7);
+            }
+
+            if (RealPitch)
+            {
+                Key += 12;
+            }
         }
 
 
@@ -243,10 +245,6 @@ namespace score.Domain
             NoteList.Add("fs'", 78);
             NoteList.Add("gb'", 78);
             NoteList.Add("g'", 79);
-
-            //   NoteList.Add("r", 60);
-            //   NoteList.Add("k", 60);
-
         }
 
         public void SetSoprano()
@@ -295,17 +293,9 @@ namespace score.Domain
             NoteList.Add("cs'", 85);
             NoteList.Add("db'", 85);
             NoteList.Add("d'", 86);
-
-
-            // NoteList.Add("r", 60);
-            // NoteList.Add("k", 60);
-
         }
-
-
         private void BuildDictionaries()
         {
-
             DurationList.Add("1", 96);
             DurationList.Add("1.", 144);
 
@@ -331,8 +321,6 @@ namespace score.Domain
             VelocityList.Add(":", 88); //stuccato
             VelocityList.Add(";", 80); //breath
             VelocityList.Add("=", 80); //default
-
         }
-
     }
 }

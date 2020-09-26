@@ -45,9 +45,9 @@ namespace score.Parser
                     throw new SkipFileException("Skip Instruction");
                 }
 
-                if (s.StartsWith("@soprano"))
+                if (s.StartsWith("@real"))
                 {
-                    note.SetSoprano();
+                    note.RealPitch = true;
                     continue;
                 }
 
@@ -57,18 +57,28 @@ namespace score.Parser
                     continue;
                 }
 
+                if (s.StartsWith("@soprano"))
+                {
+                    note.SetSoprano();
+                    continue;
+                }
+
                 if (s.StartsWith("@alto"))
                 {
                     note.SetAlto();
                     continue;
                 }
 
+                if (s.StartsWith("@transpose"))
+                {
+                    note.Transpose = true;
+                    continue;
+                }
 
                 if (s.StartsWith("t="))
                 {
                     value = s.Replace("t=", "");
                     Sequence.AddTempo(uint.Parse(value));
-
                     continue;
                 }
 
@@ -76,7 +86,6 @@ namespace score.Parser
                 {
                     value = s.Replace("f=", "");
                     MidiFile.Folder = value;
-
                     continue;
                 }
 
@@ -85,10 +94,8 @@ namespace score.Parser
                 foreach (var n in notes)
                 {
                     note.NextNote(n);
-
                     Sequence.AddMidiNote(note);
                 }
-
             }
 
             MidiFile.AllocateTracks(new TrackBuilder(Sequence, Debug));
